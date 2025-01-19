@@ -1,25 +1,19 @@
 // ==UserScript==
-// @name         PKU-Thesis-Download 北大论文平台下载工具
-// @namespace    https://greasyfork.org/zh-CN/scripts/442310-pku-thesis-download
-// @supportURL   https://github.com/xiaotianxt/PKU-Thesis-Download
-// @homepageURL  https://github.com/xiaotianxt/PKU-Thesis-Download
-// @version      1.2.5
-// @description  北大论文平台下载工具，请勿传播下载的文件，否则后果自负。
-// @author       xiaotianxt
-// @match        http://162.105.134.201/pdfindex*
-// @match        https://drm.lib.pku.edu.cn/pdfindex*
-// @match        https://drm-lib-pku-edu-cn-443.webvpn.bjmu.edu.cn/pdfindex*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=pku.edu.cn
+// @name         Fudan-Thesis-Download 复旦论文平台下载工具
+// @namespace    https://greasyfork.org/zh-CN/scripts/524197-fudan-thesis-download
+// @supportURL   https://github.com/Naylenv/Fudan-Thesis-Download
+// @homepageURL  https://github.com/Naylenv/Fudan-Thesis-Download
+// @version      1.0.5
+// @description  复旦大学论文平台下载工具，请勿传播下载的文件，否则后果自负。特别感谢：北大论文平台下载工具
+// @author       Naylen
+// @match        https://drm.fudan.edu.cn/read/pdfindex*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=fudan.edu.cn
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js
 // @license      GNU GPLv3
 // @grant        GM_addStyle
-// @history      1.2.2 修复了横屏图片的加载样式和pdf渲染样式
-// @history      1.2.3 支持北医 Web VPN 系统
-// @history      1.2.4 适配限流问题
-// @history      1.2.5 适当降低请求频率，避免触发过多限流
-// @downloadURL https://update.greasyfork.org/scripts/442310/PKU-Thesis-Download%20%E5%8C%97%E5%A4%A7%E8%AE%BA%E6%96%87%E5%B9%B3%E5%8F%B0%E4%B8%8B%E8%BD%BD%E5%B7%A5%E5%85%B7.user.js
-// @updateURL https://update.greasyfork.org/scripts/442310/PKU-Thesis-Download%20%E5%8C%97%E5%A4%A7%E8%AE%BA%E6%96%87%E5%B9%B3%E5%8F%B0%E4%B8%8B%E8%BD%BD%E5%B7%A5%E5%85%B7.meta.js
+// @downloadURL https://update.greasyfork.org/scripts/524197/fudan-thesis-download%20%E5%8C%97%E5%A4%A7%E8%AE%BA%E6%96%87%E5%B9%B3%E5%8F%B0%E4%B8%8B%E8%BD%BD%E5%B7%A5%E5%85%B7.user.js
+// @updateURL https://update.greasyfork.org/scripts/524197/fudan-thesis-download%20%E5%8C%97%E5%A4%A7%E8%AE%BA%E6%96%87%E5%B9%B3%E5%8F%B0%E4%B8%8B%E8%BD%BD%E5%B7%A5%E5%85%B7.meta.js
 // ==/UserScript==
 
 (function () {
@@ -78,23 +72,28 @@
         }
 
         // 计算指数退避延迟时间: initialDelay * 2^attempt + 随机抖动
-        const delay = initialDelay * Math.pow(2, attempt) + Math.random() * 1000;
-        console.warn(`Attempt ${attempt} failed. Retrying in ${Math.round(delay)}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const delay =
+          initialDelay * Math.pow(2, attempt) + Math.random() * 1000;
+        console.warn(
+          `Attempt ${attempt} failed. Retrying in ${Math.round(delay)}ms...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
 
   const limiter = new ParallelRateLimiter(3);
-  const print = (...args) => console.log("[PKU-Thesis-Download]", ...args);
-  const OPTIMIZATION = "pku_thesis_download.optimization";
+  const print = (...args) => console.log("[Fudan-Thesis-Download]", ...args);
+  const OPTIMIZATION = "fudan_thesis_download.resolution";
   const fid = $("#fid").val();
   const totalPage = parseInt($("#totalPages").html().replace(/ \/ /, ""));
-  const baseUrl = `/jumpServlet?fid=${fid}`;
+  const baseUrl = `https://drm.fudan.edu.cn/read/jumpServlet?fid=${fid}`;
   const msgBox = initUI();
 
-
-  if (localStorage.getItem(OPTIMIZATION) === "true" || !localStorage.getItem(OPTIMIZATION)) {
+  if (
+    localStorage.getItem(OPTIMIZATION) === "true" ||
+    !localStorage.getItem(OPTIMIZATION)
+  ) {
     optimizeImgLoading();
   }
 
@@ -113,7 +112,9 @@
     optimizeImg.innerHTML = `
     <input type="checkbox" id="optimizeImg" name="optimizeImg" value="true"><label for="optimizeImg">优化加载</label>
     `;
-    optimizeImg.querySelector("input").checked = localStorage.getItem(OPTIMIZATION) === "true" || localStorage.getItem(OPTIMIZATION) === null;
+    optimizeImg.querySelector("input").checked =
+      localStorage.getItem(OPTIMIZATION) === "true" ||
+      localStorage.getItem(OPTIMIZATION) === null;
     optimizeImg.addEventListener("click", (e) => {
       const checked = e.target.checked;
       localStorage.setItem(OPTIMIZATION, checked);
@@ -134,15 +135,18 @@
 
     const observer = new MutationObserver((mutationsList) => {
       for (let mutation of mutationsList) {
-        if (mutation.type === 'childList') {
+        if (mutation.type === "childList") {
           mutation.addedNodes.forEach((node) => {
-            if (node.nodeName === 'IMG' && node.parentElement.classList.contains('loadingBg')) {
-              node.addEventListener('load', function () {
+            if (
+              node.nodeName === "IMG" &&
+              node.parentElement.classList.contains("loadingBg")
+            ) {
+              node.addEventListener("load", function () {
                 const img = node;
                 if (img.naturalWidth > img.naturalHeight) {
                   // 横向图片
-                  img.style.height = 'min(100%, 90vw / 1.414)';
-                  img.style.width = 'auto';
+                  img.style.height = "min(100%, 90vw / 1.414)";
+                  img.style.width = "auto";
                 }
               });
             }
@@ -151,13 +155,15 @@
       }
     });
 
-    observer.observe(document.querySelector(".jspPane-scroll"), { childList: true, subtree: true });
+    observer.observe(document.querySelector(".jspPane-scroll"), {
+      childList: true,
+      subtree: true,
+    });
 
     // msgBox
     const msgBox = downloadButton.querySelector("span");
     return msgBox;
   }
-
 
   async function download(e) {
     e.preventDefault();
@@ -189,7 +195,7 @@
       tasks.push(() => retry(async () => downloadSrcInfo(url)));
     }
 
-    const results = await Promise.all(tasks.map(task => limiter.add(task)));
+    const results = await Promise.all(tasks.map((task) => limiter.add(task)));
     return results.flat(); // 假设我们想要一个扁平化的结果数组
   }
 
@@ -211,7 +217,8 @@
               img.src = base64;
 
               img.onload = () => {
-                const orientation = img.width > img.height ? "landscape" : "portrait";
+                const orientation =
+                  img.width > img.height ? "landscape" : "portrait";
                 resolve({ base64, orientation });
                 numFinished++;
                 msgBox.innerHTML = numFinished + "/" + numTotal;
@@ -220,7 +227,7 @@
               img.onerror = () => {
                 console.error("Failed to load image", url);
                 reject(null);
-              }
+              };
             };
           });
         });
@@ -231,7 +238,9 @@
 
     // assert that all pages are loaded
     if (map.size !== totalPage) {
-      const missing = Array.from({ length: totalPage }, (_, i) => i + 1).filter((i) => !map.has(`${i}`));
+      const missing = Array.from({ length: totalPage }, (_, i) => i + 1).filter(
+        (i) => !map.has(`${i}`)
+      );
       alert(`部分页面没有加载出来，请联系开发者。\n缺少：${missing.join(",")}`);
     }
 
@@ -248,7 +257,7 @@
       tasks.push(async () => await retry(async () => await downloadPdf(url)));
     });
 
-    return Promise.all(tasks.map(task => limiter.add(task)));
+    return Promise.all(tasks.map((task) => limiter.add(task)));
   }
 
   /**
@@ -257,7 +266,7 @@
    */
   async function solvePDF(base64s) {
     msgBox.innerHTML = "拼接中";
-    const doc = new jspdf.jsPDF({ format: 'a4', orientation: 'portrait' });
+    const doc = new jspdf.jsPDF({ format: "a4", orientation: "portrait" });
     for (let i = 0; i < base64s.length; i++) {
       const { base64, orientation } = base64s[i];
       if (orientation === "landscape") {
@@ -277,7 +286,10 @@
    */
   async function optimizeImgLoading() {
     function loadImgForPage(element, observer) {
-      const index = Array.from(document.getElementsByClassName('fwr_page_box')).indexOf(element) + 1;
+      const index =
+        Array.from(document.getElementsByClassName("fwr_page_box")).indexOf(
+          element
+        ) + 1;
       observer.unobserve(element);
 
       if (index % 3 !== 1) return;
@@ -286,20 +298,23 @@
     }
 
     // 创建 IntersectionObserver 实例
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          loadImgForPage(entry.target, observer);
-        }
-      });
-    }, {
-      root: document.querySelector('#jspPane'), // 使用 jspPane 作为滚动容器
-      rootMargin: '0px',
-      threshold: 0 // 当 10% 的内容进入视口时触发
-    });
+    const observer = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            loadImgForPage(entry.target, observer);
+          }
+        });
+      },
+      {
+        root: document.querySelector("#jspPane"), // 使用 jspPane 作为滚动容器
+        rootMargin: "0px",
+        threshold: 0, // 当 10% 的内容进入视口时触发
+      }
+    );
 
     // 为每个 fwr_page_box 元素设置观察器
-    const pages = document.querySelectorAll('.fwr_page_box:nth-child(3n+1)');
-    pages.forEach(page => observer.observe(page));
+    const pages = document.querySelectorAll(".fwr_page_box:nth-child(3n+1)");
+    pages.forEach((page) => observer.observe(page));
   }
 })();
