@@ -59,7 +59,7 @@
 ## 用法
 
 1. 安装[tampermonkey](https://www.tampermonkey.net/index.php?ext=dhdg)，无法科学上网可以参考[这里](https://zhuanlan.zhihu.com/p/128453110)。
-2. 安装[此脚本](https://greasyfork.org/zh-CN/scripts/442310-pku-thesis-download)。
+2. 安装[此脚本](https://greasyfork.org/zh-CN/scripts/524197-fudan-thesis-download)。
 3. 打开某篇论文在线阅读，在左侧列表点击下载文件按钮。
 
 ## 原理
