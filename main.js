@@ -7,6 +7,7 @@
 // @description  复旦大学论文平台下载工具，请勿传播下载的文件，否则后果自负。特别感谢：北大论文平台下载工具
 // @author       Naylen
 // @match        https://drm.fudan.edu.cn/read/pdfindex*
+// @match        https://webvpn.fudan.edu.cn/https/*/pdfindex*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=fudan.edu.cn
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js
