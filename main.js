@@ -90,9 +90,12 @@
   const totalPage = parseInt($("#totalPages").html().replace(/ \/ /, ""));
   const baseUrl = `https://drm.fudan.edu.cn/read/jumpServlet?fid=${fid}`;
   const msgBox = initUI();
-  const isWPN = location.href.includes('webvpn.fudan.edu.cn')
+  const isWPN = location.href.includes("webvpn.fudan.edu.cn");
 
-  if (localStorage.getItem(OPTIMIZATION) === "true" || !localStorage.getItem(OPTIMIZATION)) {
+  if (
+    localStorage.getItem(OPTIMIZATION) === "true" ||
+    !localStorage.getItem(OPTIMIZATION)
+  ) {
     optimizeImgLoading();
   }
 
@@ -164,10 +167,9 @@
     return msgBox;
   }
   function processWPN(url) {
-    const baseWPN = location.href.split('pdfindex')[0];
-    return `${baseWPN}pdfboxServlet` + url.split('pdfboxServlet')[1] + '&vpn=1'
+    const baseWPN = location.href.split("pdfindex")[0];
+    return `${baseWPN}pdfboxServlet` + url.split("pdfboxServlet")[1] + "&vpn=1";
   }
-
 
   async function download(e) {
     e.preventDefault();
@@ -210,7 +212,7 @@
     let numFinished = 0;
     async function downloadPdf(url) {
       if (isWPN) {
-        url = processWPN(url)
+        url = processWPN(url);
       }
       return fetch(url)
         .then((res) => res.blob())
@@ -307,7 +309,7 @@
      * @param {IntersectionObserver} observer - 观察器实例
      */
     function loadImgForPage(element, observer) {
-      const pages = document.getElementsByClassName('fwr_page_box');
+      const pages = document.getElementsByClassName("fwr_page_box");
       const index = Array.from(pages).indexOf(element) + 1;
       observer.unobserve(element);
 
@@ -322,22 +324,22 @@
      * 设置图片加载监控和自动重试机制
      */
     function setupImgLoadMonitor() {
-      const imgObserver = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-          if (mutation.type !== 'childList') return;
+      const imgObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type !== "childList") return;
 
-          mutation.addedNodes.forEach(node => {
+          mutation.addedNodes.forEach((node) => {
             // 筛选需要监控的图片元素
             const isTargetImage =
-              node.nodeName === 'IMG' &&
-              node.classList.contains('fwr_page_bg_image') &&
-              node.parentElement?.classList.contains('loadingBg');
+              node.nodeName === "IMG" &&
+              node.classList.contains("fwr_page_bg_image") &&
+              node.parentElement?.classList.contains("loadingBg");
 
             if (!isTargetImage) return;
 
             // 保存原始src用于重试
             const originalSrc = node.src;
-            node.setAttribute('data-original-src', originalSrc);
+            node.setAttribute("data-original-src", originalSrc);
 
             // 延迟检查图片加载状态
             setTimeout(() => checkAndRetryIfNeeded(node), 1000);
@@ -360,7 +362,9 @@
 
         // 达到最大重试次数
         if (retryCount >= maxRetries) {
-          console.error(`[Fudan-Thesis-Download] Failed to load image after ${maxRetries} attempts: ${img.id}`);
+          console.error(
+            `[Fudan-Thesis-Download] Failed to load image after ${maxRetries} attempts: ${img.id}`
+          );
           return;
         }
 
@@ -370,34 +374,35 @@
         const delay = baseDelay + jitter;
 
         console.warn(
-          Fudan-Thesis-Download] Image not loaded properly, retry ${retryCount + 1} of ${maxRetries} ` +
-          `in ${Math.round(delay)}ms: ${img.id}`
+          `[Fudan-Thesis-Download] Image not loaded properly, retry ${
+            retryCount + 1
+          } of ${maxRetries} ` + `in ${Math.round(delay)}ms: ${img.id}`
         );
 
         // 延迟后重试加载
         setTimeout(() => {
           // 清除错误状态
-          img.style.display = '';
-          
+          img.style.display = "";
+
           // 重新显示loading动画（在父元素loadingBg上）
-          const loadingBgParent = img.closest('.loadingBg');
+          const loadingBgParent = img.closest(".loadingBg");
           if (loadingBgParent) {
             // 确保loadingBg显示
-            loadingBgParent.style.display = 'block';
+            loadingBgParent.style.display = "block";
           }
-          
+
           // 将图片设置为透明，这样可以看到背景的loading动画
-          img.style.opacity = '0';
-          
+          img.style.opacity = "0";
+
           // 当图片加载成功时恢复透明度
-          img.onload = function() {
-            img.style.opacity = '1';
+          img.onload = function () {
+            img.style.opacity = "1";
           };
 
           // 添加时间戳参数避免缓存
           const timestamp = new Date().getTime();
-          const originalSrc = img.getAttribute('data-original-src');
-          const separator = originalSrc.includes('?') ? '&' : '?';
+          const originalSrc = img.getAttribute("data-original-src");
+          const separator = originalSrc.includes("?") ? "&" : "?";
           const newSrc = `${originalSrc}${separator}_retry=${timestamp}`;
 
           // 重新设置src触发加载
@@ -411,23 +416,23 @@
       // 观察整个文档的DOM变化
       imgObserver.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
       });
     }
 
     // 创建交叉观察器用于懒加载
     const observer = new IntersectionObserver(
       (entries, observer) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             loadImgForPage(entry.target, observer);
           }
         });
       },
       {
-        root: document.querySelector('#jspPane'),
-        rootMargin: '0px',
-        threshold: 0
+        root: document.querySelector("#jspPane"),
+        rootMargin: "0px",
+        threshold: 0,
       }
     );
 
