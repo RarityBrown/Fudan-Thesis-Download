@@ -212,10 +212,17 @@
   async function solveImg(urls) {
     let numFinished = 0;
     async function downloadPdf(url) {
-      if (isWPN) {
-        url = processWPN(url);
+      const urlObj = new URL(url);
+      urlObj.searchParams.set("scale", "5f");
+      if (urlObj.searchParams.has("watermark")) {
+        urlObj.searchParams.delete("watermark");
       }
-      return fetch(url)
+      let modifiedUrl = urlObj.toString();
+
+      if (isWPN) {
+        modifiedUrl = processWPN(modifiedUrl);
+      }
+      return fetch(modifiedUrl)
         .then((res) => res.blob())
         .then((blob) => {
           const reader = new FileReader();
